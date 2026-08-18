@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/pages/home_screen.dart';
 import 'package:flutter_application_1/pages/settings_page.dart';
-
-import '../pages/profile_page.dart';
-
 class MyDrawer extends StatelessWidget {
   const MyDrawer({super.key});
 
@@ -34,7 +32,7 @@ class MyDrawer extends StatelessWidget {
 
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => ProfilePage()),
+                  MaterialPageRoute(builder: (context) => HomeScreen()),
                 );
               },
             ),

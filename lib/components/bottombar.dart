@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/pages/home_screen.dart';
-import 'package:flutter_application_1/pages/profile_page.dart';
+
 
 class Bottombar extends StatelessWidget {
   const Bottombar({super.key});
@@ -32,7 +32,7 @@ class Bottombar extends StatelessWidget {
 
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => ProfilePage()),
+                MaterialPageRoute(builder: (context) => HomeScreen()),
               );
             },
           ),
