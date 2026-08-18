@@ -8,6 +8,7 @@ class Bottombar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BottomAppBar(
+      elevation: 0,
       height: 50,
       color: Theme.of(context).colorScheme.primary.withOpacity(0.2),
       child: Row(

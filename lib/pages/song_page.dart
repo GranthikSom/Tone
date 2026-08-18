@@ -109,22 +109,18 @@ class _SongPageState extends State<SongPage> {
                           itemBuilder: (context, index) {
                             final pageSong = playlist[index];
                             return Center(
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(24),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.3),
-                                      blurRadius: 20,
-                                      offset: const Offset(0, 10),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(24),
+                                  ),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(24),
+                                    child: AspectRatio(
+                                      aspectRatio: 1,
+                                      child: Image(image: AssetImage(pageSong.album), fit: BoxFit.cover),
                                     ),
-                                  ],
-                                ),
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(24),
-                                  child: AspectRatio(
-                                    aspectRatio: 1,
-                                    child: Image(image: AssetImage(pageSong.album), fit: BoxFit.cover),
                                   ),
                                 ),
                               ),

@@ -11,7 +11,7 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Tone")),
+      appBar: AppBar(title: const Text("Tone"), elevation: 0),
       drawer: MyDrawer(),
       body: Consumer<PlaylistProvider>(
         builder: (context, playlistProvider, child) {
@@ -33,6 +33,8 @@ class HomeScreen extends StatelessWidget {
                   );
                 },
                 child: Card(
+                  elevation: 0,
+                  color: Colors.transparent,
                   child: Column(
                     children: [
                       Image.asset(song.album, height: 120, fit: BoxFit.cover),
