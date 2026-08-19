@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/components/bottombar.dart';
+
 import 'package:flutter_application_1/themes/theme_provider.dart';
 import 'package:provider/provider.dart';
 class SettingsPage extends StatelessWidget {
@@ -46,7 +46,7 @@ class SettingsPage extends StatelessWidget {
           ),
         ],
       ),
-      bottomNavigationBar: const Bottombar(),
+      
     );
   }
 }

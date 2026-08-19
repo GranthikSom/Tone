@@ -1,8 +1,8 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/components/bottombar.dart';
-import 'package:flutter_application_1/components/my_drawer.dart';
+
+
 import 'package:flutter_application_1/models/playlist_provider.dart';
 import 'package:flutter_application_1/pages/playlist_detail_page.dart';
 import 'package:provider/provider.dart';
@@ -14,7 +14,7 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("Tone"), elevation: 0),
-      drawer: const MyDrawer(),
+    
       body: Consumer<PlaylistProvider>(
         builder: (context, provider, child) {
           final playlists = provider.playlists;
@@ -56,7 +56,7 @@ class HomeScreen extends StatelessWidget {
           );
         },
       ),
-      bottomNavigationBar: const Bottombar(),
+   
     );
   }
 
