@@ -1,3 +1,4 @@
+import 'package:audio_service/audio_service.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/models/song_data.dart';
@@ -165,4 +166,50 @@ class PlaylistProvider extends ChangeNotifier {
     }
     notifyListeners();
   }
+}
+
+
+class MyAudioHandler extends BaseAudioHandler with SeekHandler {
+  final PlaylistProvider provider;
+  
+  MyAudioHandler(this.provider) {
+    provider.addListener(() {
+      final songIndex = provider.currentSongIndex;
+      if (songIndex != null) {
+        final song = provider.playlists[songIndex];
+        mediaItem.add(MediaItem(
+          id: song.audiopath,
+          album: "Tone",
+          title: song.title,
+          artist: song.artist,
+        ));
+      }
+      
+      playbackState.add(playbackState.value.copyWith(
+        controls: [
+          MediaControl.skipToPrevious,
+          provider.isPlaying ? MediaControl.pause : MediaControl.play,
+          MediaControl.skipToNext,
+        ],
+        systemActions: const {MediaAction.seek},
+        playing: provider.isPlaying,
+        processingState: AudioProcessingState.ready,
+      ));
+    });
+  }
+
+  @override
+  Future<void> play() async => provider.resume();
+
+  @override
+  Future<void> pause() async => provider.pause();
+
+  @override
+  Future<void> skipToNext() async => provider.playNext();
+
+  @override
+  Future<void> skipToPrevious() async => provider.playPrevious();
+
+  @override
+  Future<void> seek(Duration position) async => provider.seek(position);
 }
