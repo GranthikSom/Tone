@@ -1,7 +1,9 @@
+import 'dart:io';
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/models/playlist_provider.dart';
 import 'package:provider/provider.dart';
-import 'dart:ui';
 
 class SongPage extends StatefulWidget {
   const SongPage({super.key});
@@ -28,40 +30,72 @@ class _SongPageState extends State<SongPage> {
     super.dispose();
   }
 
+  /// Renders cover art for a song — handles both assets and local files.
+  Widget _coverWidget(Song song, {double iconSize = 80}) {
+    if (song.album.isEmpty) {
+      return Container(
+        color: Colors.grey[700],
+        child: Icon(Icons.music_note, color: Colors.white, size: iconSize),
+      );
+    }
+    if (song.isAsset) return Image.asset(song.album, fit: BoxFit.cover);
+    final file = File(song.album);
+    if (file.existsSync()) return Image.file(file, fit: BoxFit.cover);
+    return Container(
+      color: Colors.grey[700],
+      child: Icon(Icons.music_note, color: Colors.white, size: iconSize),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<PlaylistProvider>(
       builder: (context, value, child) {
-        final playlist = value.playlists;
-        final songIndex = playlist[value.currentSongIndex ?? 0];
-        
-        if (_lastKnownIndex != (value.currentSongIndex ?? 0)) {
-           _lastKnownIndex = value.currentSongIndex ?? 0;
-           WidgetsBinding.instance.addPostFrameCallback((_) {
-             if (_pageController.hasClients && _pageController.page?.round() != _lastKnownIndex) {
-                _pageController.animateToPage(
-                  _lastKnownIndex,
-                  duration: const Duration(milliseconds: 300),
-                  curve: Curves.easeInOut,
-                );
-             }
-           });
+        final playlist = value.currentSongs;
+        if (playlist.isEmpty) {
+          return const Scaffold(body: Center(child: Text('No songs')));
         }
-        
-        int prevIndex = (value.currentSongIndex ?? 0) - 1;
+
+        final currentIdx =
+            (value.currentSongIndex ?? 0).clamp(0, playlist.length - 1);
+        final songIndex = playlist[currentIdx];
+
+        if (_lastKnownIndex != currentIdx) {
+          _lastKnownIndex = currentIdx;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (_pageController.hasClients &&
+                _pageController.page?.round() != _lastKnownIndex) {
+              _pageController.animateToPage(
+                _lastKnownIndex,
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeInOut,
+              );
+            }
+          });
+        }
+
+        int prevIndex = currentIdx - 1;
         if (prevIndex < 0) prevIndex = playlist.length - 1;
-        int nextIndex = (value.currentSongIndex ?? 0) + 1;
+        int nextIndex = currentIdx + 1;
         if (nextIndex >= playlist.length) nextIndex = 0;
-        
+
         final prevSong = playlist[prevIndex];
         final nextSong = playlist[nextIndex];
+
+        final playlistName = value.playlists.isNotEmpty &&
+                value.currentPlaylistIndex < value.playlists.length
+            ? value.playlists[value.currentPlaylistIndex].name
+            : '';
 
         return Scaffold(
           body: Stack(
             fit: StackFit.expand,
             children: [
               // Background Image
-              Image(image: AssetImage(songIndex.album), fit: BoxFit.cover),
+              if (songIndex.album.isNotEmpty)
+                _coverWidget(songIndex)
+              else
+                Container(color: Colors.grey[800]),
               // Blur Layer
               BackdropFilter(
                 filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
@@ -79,19 +113,27 @@ class _SongPageState extends State<SongPage> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           IconButton(
-                            icon: const Icon(Icons.arrow_back_ios, color: Colors.black, size: 20),
+                            icon: const Icon(Icons.arrow_back_ios,
+                                color: Colors.black, size: 20),
                             onPressed: () => Navigator.pop(context),
                             padding: EdgeInsets.zero,
                             alignment: Alignment.centerLeft,
                           ),
-                          const Text("Now Playing", style: TextStyle(color: Colors.black, fontSize: 16, fontWeight: FontWeight.w500)),
+                          const Text("Now Playing",
+                              style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500)),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 4),
                             decoration: BoxDecoration(
                               color: Colors.black.withOpacity(0.5),
                               borderRadius: BorderRadius.circular(6),
                             ),
-                            child: const Text("Hi-res", style: TextStyle(color: Colors.white, fontSize: 12)),
+                            child: const Text("Hi-res",
+                                style: TextStyle(
+                                    color: Colors.white, fontSize: 12)),
                           ),
                         ],
                       ),
@@ -110,17 +152,13 @@ class _SongPageState extends State<SongPage> {
                             final pageSong = playlist[index];
                             return Center(
                               child: Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(24),
-                                  ),
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(24),
-                                    child: AspectRatio(
-                                      aspectRatio: 1,
-                                      child: Image(image: AssetImage(pageSong.album), fit: BoxFit.cover),
-                                    ),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 10.0),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(24),
+                                  child: AspectRatio(
+                                    aspectRatio: 1,
+                                    child: _coverWidget(pageSong),
                                   ),
                                 ),
                               ),
@@ -150,14 +188,18 @@ class _SongPageState extends State<SongPage> {
                         ),
                       ),
                       const SizedBox(height: 10),
-                      Divider(color: Colors.black.withOpacity(0.1), thickness: 1.5),
+                      Divider(
+                          color: Colors.black.withOpacity(0.1),
+                          thickness: 1.5),
                       const SizedBox(height: 10),
                       // Slider
                       SliderTheme(
                         data: SliderTheme.of(context).copyWith(
                           trackHeight: 6,
-                          thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 10),
-                          overlayShape: const RoundSliderOverlayShape(overlayRadius: 20),
+                          thumbShape: const RoundSliderThumbShape(
+                              enabledThumbRadius: 10),
+                          overlayShape: const RoundSliderOverlayShape(
+                              overlayRadius: 20),
                           activeTrackColor: Colors.white,
                           inactiveTrackColor: Colors.black.withOpacity(0.2),
                           thumbColor: Colors.white,
@@ -165,7 +207,9 @@ class _SongPageState extends State<SongPage> {
                         child: Slider(
                           value: value.currentDuration.inSeconds.toDouble(),
                           min: 0,
-                          max: value.totalDuration.inSeconds > 0 ? value.totalDuration.inSeconds.toDouble() : 1,
+                          max: value.totalDuration.inSeconds > 0
+                              ? value.totalDuration.inSeconds.toDouble()
+                              : 1,
                           onChanged: (double val) {
                             value.seek(Duration(seconds: val.toInt()));
                           },
@@ -177,13 +221,25 @@ class _SongPageState extends State<SongPage> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('from "hits"', style: TextStyle(color: Colors.black.withOpacity(0.7), fontSize: 14)),
-                              Text('previous ${prevSong.title.toUpperCase()}', style: TextStyle(color: Colors.black.withOpacity(0.7), fontSize: 14)),
-                              Text('next ${nextSong.title.toUpperCase()}', style: TextStyle(color: Colors.black.withOpacity(0.7), fontSize: 14)),
-                            ],
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('from "$playlistName"',
+                                    style: TextStyle(
+                                        color: Colors.black.withOpacity(0.7),
+                                        fontSize: 14)),
+                                Text(
+                                    'previous ${prevSong.title.toUpperCase()}',
+                                    style: TextStyle(
+                                        color: Colors.black.withOpacity(0.7),
+                                        fontSize: 14)),
+                                Text('next ${nextSong.title.toUpperCase()}',
+                                    style: TextStyle(
+                                        color: Colors.black.withOpacity(0.7),
+                                        fontSize: 14)),
+                              ],
+                            ),
                           ),
                           GestureDetector(
                             onTap: value.pauseOrResume,
